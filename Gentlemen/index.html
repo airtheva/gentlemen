@@ -98,16 +98,17 @@
 							</ul>
 							<div class="row" ms-each-resource="resourceList">
 								<div class="col-md-3">
-									<a class="thumbnail">
-										<img ms-attr-src="{{ resource.previewUri }}" ms-click="Detail(resource)" style="height: 128px;" />
-										<div class="caption" ms-attr-title="{{ resource.title }}" style="height: 5em; overflow: hidden;">
+									<div class="thumbnail">
+										<img ms-attr-src="{{ resource.previewUri }}" ms-click="Detail(resource)" style="min-height: 128px; max-height: 128px;" />
+										<div class="caption" ms-attr-title="{{ resource.title }}" style="min-height: 5em; max-height: 5em; overflow: hidden;">
 											<span class="label label-default">{{ resource.type }}</span>&nbsp;{{ resource.title }}
 										</div>
 										<div class="clearfix">
-											<button type="button" class="btn btn-primary btn-block" ms-class-0="hide: IsCollected(resource)" ms-click="Collect(resource)">收藏</button>
-											<button type="button" class="btn btn-success btn-block" ms-class-0="hide: !IsCollected(resource)">已收藏</button>
+											<!-- 这里本来是用btn-block的，但是btn-block + btn-block会设置上边距，这不是我想要的，所以暂时用style解决。 -->
+											<button type="button" class="btn btn-primary" ms-class-0="hide: IsCollected(resource)" ms-click="Collect(resource)" style="width: 100%;">收藏</button>
+											<button type="button" class="btn btn-success" ms-class-0="hide: !IsCollected(resource)" style="width: 100%;">已收藏</button>
 										</div>
-									</a>
+									</div>
 								</div>
 							</div>
 							<ul class="pagination pull-right" ms-each-index="pageIndices">
@@ -125,8 +126,8 @@
 							<div class="row" ms-each-resource="resourceList">
 								<div class="col-md-3">
 									<div class="thumbnail">
-										<img ms-attr-src="{{ resource.previewUri }}" ms-click="Detail(resource)" style="max-height: 128px;" />
-										<div class="caption" ms-attr-title="{{ resource.title }}" style="height: 5em; overflow: hidden;">
+										<img ms-attr-src="{{ resource.previewUri }}" ms-click="Detail(resource)" style="min-height: 128px; max-height: 128px;" />
+										<div class="caption" ms-attr-title="{{ resource.title }}" style="min-height: 5em; max-height: 5em; overflow: hidden;">
 											<span class="label label-default">{{ resource.type }}</span>&nbsp;{{ resource.title }}
 										</div>
 										<div class="btn-group btn-block" ms-class-0="open: resource.isActionsShowed">
@@ -254,7 +255,7 @@
 						<tbody>
 							<tr><td>资源地址</td><td>{{ downloadTask.resource.uri }}</td></tr>
 							<tr><td>资源标题</td><td>{{ downloadTask.resource.title }}</td></tr>
-							<tr><td>下载进度</td><td>{{ downloadTask.imageResourceIndex }}&nbsp;/&nbsp;{{ downloadTask.resource.imageResourceAmount }}</td></tr>
+							<tr><td>下载进度</td><td>{{ downloadTask.imageResourceIndex + 1 }}&nbsp;/&nbsp;{{ downloadTask.resource.imageResourceAmount }}</td></tr>
 							<tr><td>状态</td><td>{{ downloadTask.status }}</td></tr>
 							<tr><td>错误</td><td>{{ downloadTask.err }}</td></tr>
 							<tr><td>日志</td><td><pre>{{ downloadTask.logs }}</pre></td></tr>
