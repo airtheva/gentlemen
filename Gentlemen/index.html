@@ -1,0 +1,679 @@
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" href="./frontend/bootstrap/css/bootstrap.css" media="screen" />
+	<style type="text/css">
+
+	a {
+		cursor: pointer;
+	}
+
+	/* Modified rom bootstrap.css. */
+	div.thumbnail:hover,
+	div.thumbnail:focus,
+	div.thumbnail.active {
+	  border-color: #428bca;
+	}
+
+	</style>
+	<title>Gentlemen</title>
+</head>
+
+<body ms-controller="Application">
+
+	<nav class="navbar-wrapper navbar-default navbar-fixed-top">
+		<div class="container">
+
+			<div class="navbar-header">
+				<a class="navbar-brand" href="https://github.com/airtheva/gentlemen" target="_blank">Gentlemen</a>
+			</div>
+
+			<div class="navbar-collapse">
+				<div class="nav navbar-nav navbar-right">
+					<form class="navbar-form">
+						<button type="button" class="btn btn-default" title="显示应用目录" onclick="ShowDir()">
+							<span class="glyphicon glyphicon-folder-open"></span>
+						</button>
+						<button type="button" class="btn btn-default" title="保存收藏资源列表" onclick="SaveCollectResourceList()">
+							<span class="glyphicon glyphicon-floppy-disk"></span>
+						</button>
+						<button type="button" class="btn btn-default" title="最小化" onclick="NWWindow.minimize()">
+							<span class="glyphicon glyphicon-minus"></span>
+						</button>
+						<button type="button" class="btn btn-danger" title="关闭" onclick="NWWindow.close()">
+							<span class="glyphicon glyphicon-off"></span>
+						</button>
+					</form>
+				</div>
+			</div>
+
+		</div>
+	</nav>
+
+	<div class="container" style="margin-top: 64px;">
+
+		<div class="hide">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h1 class="panel-title">公告</h1>
+				</div>
+				<div class="panel-body">
+					<pre>
+					</pre>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-12">
+			<ul class="nav nav-tabs">
+				<li ms-class-0="active: activeTabName == 'browse'"><a ms-click="SetActiveTabName('browse')">浏览&nbsp;<span class="badge">{{ browseTabBadge }}</span></a>
+				</li>
+				<li ms-class-0="active: activeTabName == 'collect'"><a ms-click="SetActiveTabName('collect')">收藏&nbsp;<span class="badge" ms-class-0="hide: collectTabBadge == 0">{{ collectTabBadge }}</span></a>
+				</li>
+				<li ms-class-0="active: activeTabName == 'download'"><a ms-click="SetActiveTabName('download')">下载&nbsp;<span class="badge" ms-class-0="hide: downloadTabBadge == 0">{{ downloadTabBadge }}</span></a>
+				</li>
+				<li ms-class-0="active: activeTabName == 'configure'"><a ms-click="SetActiveTabName('configure')">配置</a>
+				</li>
+			</ul>
+			<div class="tab-content" style="padding-top: 16px;">
+				<div class="tab-pane" ms-class-0="active: activeTabName == 'browse'">
+					<div class="panel panel-default" ms-controller="Browse">
+						<div class="panel-heading">
+							<a class="glyphicon glyphicon-refresh pull-right" ms-click="Refresh()">刷新</a>
+							<h1 class="panel-title">浏览</h1>
+						</div>
+						<div class="panel-body">
+							<div class="input-group">
+								<span class="input-group-btn">
+									<button type="button" class="btn btn-default" ms-click="ClearFilter()">清空</button>
+								</span>
+								<input type="text" class="form-control" placeholder="Filter" ms-duplex="duplexFilter" />
+								<span class="input-group-btn">
+									<button type="button" class="btn btn-default" ms-click="Filter()">搜索</button>
+								</span>
+							</div>
+							<ul class="pagination" ms-each-index="pageIndices">
+								<li ms-class-0="active: index == pageIndex"><a ms-click="SetPageIndex(index)">{{ index }}</a></li>
+							</ul>
+							<div class="row" ms-each-resource="resourceList">
+								<div class="col-md-3">
+									<a class="thumbnail">
+										<img ms-attr-src="{{ resource.previewUri }}" ms-click="Detail(resource)" style="height: 128px;" />
+										<div class="caption" ms-attr-title="{{ resource.title }}" style="height: 5em; overflow: hidden;">
+											<span class="label label-default">{{ resource.type }}</span>&nbsp;{{ resource.title }}
+										</div>
+										<div class="clearfix">
+											<button type="button" class="btn btn-primary btn-block" ms-class-0="hide: IsCollected(resource)" ms-click="Collect(resource)">收藏</button>
+											<button type="button" class="btn btn-success btn-block" ms-class-0="hide: !IsCollected(resource)">已收藏</button>
+										</div>
+									</a>
+								</div>
+							</div>
+							<ul class="pagination pull-right" ms-each-index="pageIndices">
+								<li ms-class-0="active: index == pageIndex"><a ms-click="SetPageIndex(index)">{{ index }}</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div class="tab-pane" ms-class-0="active: activeTabName == 'collect'">
+					<div class="panel panel-default" ms-controller="Collect">
+						<div class="panel-heading">
+							<h1 class="panel-title">收藏</h1>
+						</div>
+						<div class="panel-body">
+							<div class="row" ms-each-resource="resourceList">
+								<div class="col-md-3">
+									<div class="thumbnail">
+										<img ms-attr-src="{{ resource.previewUri }}" ms-click="Detail(resource)" style="max-height: 128px;" />
+										<div class="caption" ms-attr-title="{{ resource.title }}" style="height: 5em; overflow: hidden;">
+											<span class="label label-default">{{ resource.type }}</span>&nbsp;{{ resource.title }}
+										</div>
+										<div class="btn-group btn-block" ms-class-0="open: resource.isActionsShowed">
+											<button type="button" class="btn btn-block" ms-class-0="btn-default: resource.status == 'unknown'" ms-class-1="btn-warning: resource.status == 'downloading'" ms-class-2="btn-success: resource.status == 'downloaded'" ms-click="ToggleActions(resource)">操作<span class="caret"></span></button>
+											<ul class="dropdown-menu">
+												<li><a ms-click-0="Download(resource);" ms-click="ToggleActions(resource);">下载</a></li>
+												<li><a ms-click-0="Open(resource);" ms-click-1="ToggleActions(resource);">打开</a></li>
+												<li><a ms-click-0="Remove(resource);" ms-click-1="ToggleActions(resource);">移除</a></li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="tab-pane" ms-class-0="active: activeTabName == 'download'">
+					<div class="panel panel-default" ms-controller="Download">
+						<div class="panel-heading">
+							<a class="glyphicon glyphicon-plus pull-right" ms-click="ShowAddByResourceUriDialog()">从资源地址添加</a>
+							<h1 class="panel-title">下载</h1>
+						</div>
+						<div class="panel-body">
+							<table class="table table-bordered table-hover" style="text-align: center;">
+								<thead>
+									<tr>
+										<td style="width: 50%;">标题</td>
+										<td style="width: 20%;">进度</td>
+										<td style="width: 30%;">操作</td>
+									</tr>
+								</thead>
+								<tbody ms-each-task="downloadTaskList">
+									<tr>
+										<td><a ms-click="ShowDetailDialog(task)">{{ task.resource.title }}</a></td>
+										<td>
+											<!-- 运行中。 -->
+											<div class="progress progress-striped active" ms-class-0="hide: task.status != 'running'">
+												<div class="progress-bar progress-bar-info" ms-attr-style="width: {{ task.progress }}%;">
+												</div>
+											</div>
+											<!-- 停止。 -->
+											<div class="progress progress-striped" ms-class-0="hide: task.status != 'stopped'">
+												<div class="progress-bar progress-bar-warning" ms-attr-style="width: {{ task.progress }}%;">
+												</div>
+											</div>
+											<!-- 出错。 -->
+											<div class="progress progress-striped" ms-class-0="hide: task.status != 'aborted'">
+												<div class="progress-bar progress-bar-danger" ms-attr-title="{{ task.err }}" ms-attr-style="width: {{ task.progress }}%;">
+												</div>
+											</div>
+											<!-- 完成。 -->
+											<div class="progress progress-striped" ms-class-0="hide: task.status != 'finished'">
+												<div class="progress-bar progress-bar-success" ms-attr-style="width: {{ task.progress }}%;">
+												</div>
+											</div>
+										</td>
+										<td>
+											<button type="button" class="btn" ms-class-0="btn-default: task.status == 'running'" ms-class-1="btn-primary: task.status != 'running'" ms-click="Start(task)">开始</button>
+											<button type="button" class="btn" ms-class-0="btn-default: task.status != 'running'" ms-class-1="btn-primary: task.status == 'running'" ms-click="Stop(task)">停止</button>
+											<button type="button" class="btn btn-danger" ms-click="Remove(task)">移除</button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="tab-pane" ms-class-0="active: activeTabName == 'configure'">
+					<div class="panel panel-default" ms-controller="Configure">
+						<div class="panel-heading">
+							<h1 class="panel-title">配置</h1>
+						</div>
+						<div class="panel-body">
+							<table class="table" style=" text-align: center;">
+								<thead>
+									<tr><th style="width: 30%;">&nbsp;</th><th style="width: 70%;">&nbsp;</th></tr>
+								</thead>
+								<tbody>
+									<tr><td>HTTP代理</td><td><input type="text" class="form-control" placeholder="http://host:port/" ms-duplex="duplexHTTPProxy" /></td></tr>
+								</tbody>
+							</table>
+							<div class="clearfix">
+								<button type="button" class="btn btn-default pull-left" ms-click="Load()">加载</button>
+								<button type="button" class="btn btn-primary pull-right" ms-click="Save()">保存</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="modal fade" id="AddDownloadTaskByResourceUriDialog" ms-controller="AddDownloadTaskByResourceUriDialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h2 class="modal-title">从资源地址添加下载任务</h2>
+				</div>
+				<div class="modal-body">
+					<input type="text" class="form-control" placeholder="http://g.e-hentai.org/g/82754/426a61a566/" ms-duplex="duplexResourceUri" />
+				</div>
+				<div class="modal-footer">
+					<div class="clearfix">
+						<button type="button" class="btn btn-default pull-left" data-dismiss="modal">放弃</button>
+						<button type="button" class="btn btn-primary pull-right" data-dismiss="modal" ms-click="AddByResourceUri()">添加</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="DownloadTaskDetailDialog" ms-controller="DownloadTaskDetailDialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h2 class="modal-title">下载任务详细信息</h2>
+				</div>
+				<div class="modal-body">
+					<table class="table" style=" text-align: center;">
+						<thead>
+							<tr><th style="width: 30%;">&nbsp;</th><th style="width: 70%;">&nbsp;</th></tr>
+						</thead>
+						<tbody>
+							<tr><td>资源地址</td><td>{{ downloadTask.resource.uri }}</td></tr>
+							<tr><td>资源标题</td><td>{{ downloadTask.resource.title }}</td></tr>
+							<tr><td>下载进度</td><td>{{ downloadTask.imageResourceIndex }}&nbsp;/&nbsp;{{ downloadTask.resource.imageResourceAmount }}</td></tr>
+							<tr><td>状态</td><td>{{ downloadTask.status }}</td></tr>
+							<tr><td>错误</td><td>{{ downloadTask.err }}</td></tr>
+							<tr><td>日志</td><td><pre>{{ downloadTask.logs }}</pre></td></tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="modal-footer">
+					<div class="clearfix">
+						<button type="button" class="btn btn-primary pull-right" data-dismiss="modal">关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+
+	var MPath = require('path');
+	var MFs = require('fs');
+	var MChildProcess = require('child_process');
+
+	var MNWGUI = require('nw.gui');
+
+	var MEHentai = require('./eHentai');
+
+	var NWWindow = MNWGUI.Window.get();
+
+	</script>
+
+	<script type="text/javascript" src="./frontend/jquery.min.js"></script>
+	<script type="text/javascript" src="./frontend/bootstrap/js/bootstrap.js"></script>
+		<script type="text/javascript" src="./frontend/avalon/avalon.mobile.js"></script>
+		<script type="text/javascript">
+
+		var Application = avalon.define('Application', function(vm) {
+
+    // 状态。
+    vm.activeTabName = 'browse';
+    vm.SetActiveTabName = function(tabName) {
+
+    	switch(tabName) {
+		case 'collect':
+			Collect.Update();
+    		break;
+    	}
+
+    	Application.activeTabName = tabName;
+    };
+    vm.browseTabBadge = 1;
+    vm.collectTabBadge = 0;
+    vm.downloadTabBadge = 0;
+
+});
+
+		var Browse = avalon.define('Browse', function(vm) {
+
+    // 浏览。
+    vm.duplexFilter = '';
+    // 用于显示的pageIndex，实际请求的时候需要-1。
+    vm.pageIndex = 1;
+    vm.pageAmount = 1;
+    vm.pageIndices = [];
+    vm.resourceList = [];
+    vm.ClearFilter = function() {
+    	Browse.filter = '';
+    };
+    vm.SetPageIndex = function(pageIndex) {
+
+    	// 处理一下让它变成0-based。
+    	pageIndex = pageIndex - 1;
+
+    	MEHentai.GetResourceList(Browse.duplexFilter, pageIndex, function(err, pageAmount, resourceList) {
+
+    		if (err) {
+    			alert(err);
+    		} else {
+    			Browse.pageIndex = pageIndex + 1;
+    			Browse.pageAmount = pageAmount;
+    			Browse.resourceList = avalon.mix(true, [], resourceList);
+    			Browse.UpdatePageIndices();
+
+    			Application.browseTabBadge = pageIndex + 1;
+    		}
+
+    	});
+    };
+    vm.UpdatePageIndices = function() {
+
+    	// [1<, 5, 6, 7, 8, -9-, 10, 11, 12, 13, >8888]
+    	var pageIndices = [];
+
+    	pageIndices.push(1);
+
+    	var times = (Browse.pageAmount - Browse.pageIndex) > 4 ? 9 : 5 + (Browse.pageAmount - Browse.pageIndex - 1);
+
+    	var start = Browse.pageIndex > 5 ? Browse.pageIndex - 4 : 2;
+    	for(var i = 0; i < times; i++) {
+    		pageIndices.push(start++);
+    	}
+
+    	pageIndices.push(Browse.pageAmount);
+
+    	Browse.pageIndices = pageIndices;
+
+    };
+    vm.Refresh = function() {
+    	Browse.SetPageIndex(Browse.pageIndex);
+    };
+    vm.Filter = function() {
+    	Browse.SetPageIndex(1);
+    };
+    vm.IsCollected = function(resource) {
+
+    	return Collect.Exist(resource);
+
+    };
+    vm.Detail = function(resource) {
+
+    	MNWGUI.Window.get(window.open(resource.uri));
+
+    };
+    vm.Collect = function(resource) {
+    	Collect.Add(avalon.mix(true, {}, resource.$model));
+    };
+
+});
+
+var Collect = avalon.define('Collect', function(vm) {
+
+    // 收藏。
+    vm.resourceList = [];
+    vm.UpdateStatus = function(resource) {
+
+    	var resourceDir = MEHentai.MakeResourceDir(avalon.mix(true, {}, resource.$model));
+
+    	resource.status = 'unknown';
+
+    	MFs.exists(MPath.join(resourceDir, 'downloading'), function(exists) {
+
+    		if(exists) {
+    			resource.status = 'downloading';
+    		}
+
+    	});
+
+    	MFs.exists(MPath.join(resourceDir, 'downloaded'), function(exists) {
+
+    		if(exists) {
+    			resource.status = 'downloaded';
+    		}
+
+    	});
+
+    };
+    vm.Update = function(resource) {
+
+    	var size = Collect.resourceList.size();
+
+    	for(var i = 0; i < size; i++) {
+
+    		var resource = Collect.resourceList[i];
+
+    		Collect.UpdateStatus(resource);
+
+    	}
+
+    };
+    vm.Exist = function(resource) {
+
+    	for(var i = 0; i < Collect.resourceList.length; i++) {
+
+    		var resource0 = Collect.resourceList[i].$model;
+
+    		if(resource.title == resource0.title) {
+
+    			return true;
+
+    		}
+
+    	}
+
+    	return false;
+
+    };
+    vm.Add = function(resource) {
+
+		resource.status = 'unknown';
+		resource.isActionsShowed = false;
+
+    	var index = Collect.resourceList.push(resource) - 1;
+    	Collect.UpdateStatus(Collect.resourceList[index]);
+    	Application.collectTabBadge = Collect.resourceList.size();
+
+    };
+    vm.Detail = function(resource) {
+    	Browse.Detail(resource);
+    };
+    vm.ToggleActions = function(resource) {
+    	resource.isActionsShowed = !resource.isActionsShowed;
+    };
+    vm.Download = function(resource) {
+    	Download.AddByResource(avalon.mix(true, {}, resource.$model));
+    };
+    vm.Open = function(resource) {
+
+    	var path = 'explorer "' + MEHentai.MakeResourceDir(resource) + '"';
+
+    	console.log(path);
+
+    	MChildProcess.exec(path, function(stderr, stdout, stderr) {
+
+    	});
+
+    };
+    vm.Remove = function(resource) {
+    	Collect.resourceList.remove(resource);
+    	Application.collectTabBadge = Collect.resourceList.size();
+    };
+
+});
+
+var Download = avalon.define('Download', function(vm) {
+
+    // 下载。
+    vm.duplexResourceUri = '';
+    vm.downloadTaskList = [];
+    vm.AddByResource = function(resource) {
+    	MEHentai.CreateDownloadTaskByResource(resource, function(err, downloadTask) {
+
+    		if(err) {
+    			alert(err);
+    		}
+    		else {
+    			Download.downloadTaskList.push(avalon.mix(true, {}, downloadTask));
+    			Application.downloadTabBadge = Download.downloadTaskList.size();
+    		}
+
+    	});
+    };
+    vm.AddByResourceUri = function() {
+    	MEHentai.CreateDownloadTaskByResourceUri(Download.duplexResourceUri, function(err, downloadTask) {
+
+    		if(err) {
+    			alert(err);
+    		}
+    		else {
+    			Collect.Add(avalon.mix(true, {}, downloadTask.resource));
+    			Download.downloadTaskList.push(avalon.mix(true, {}, downloadTask));
+    			Application.downloadTabBadge = Download.downloadTaskList.size();
+    		}
+
+    	});
+    };
+    vm.Start = function(downloadTask) {
+
+    	if(!downloadTask.status != 'downloading') {
+    		MEHentai.StartDownloadTask(downloadTask.id, function(err, downloadTask0) {
+
+    			if(err) {
+    				alert(err);
+    			}
+
+    			downloadTask.imageResourceIndex = downloadTask0.imageResourceIndex;
+    			downloadTask.progress = downloadTask0.progress;
+    			downloadTask.status = downloadTask0.status;
+    			downloadTask.err = downloadTask0.err;
+    			downloadTask.logs = downloadTask0.logs;
+
+    			
+    		});
+    	}
+    };
+    vm.Stop = function(downloadTask) {
+
+    	MEHentai.StopDownloadTask(downloadTask.id, function(err, downloadTask0) {
+
+    		if(err) {
+    			alert(err);
+    		}
+    		else {
+    			downloadTask;
+    		}
+
+    	});
+
+    };
+    vm.Remove = function(downloadTask) {
+
+    	MEHentai.StopDownloadTask(downloadTask.id);
+    	MEHentai.RemoveDownloadTask(downloadTask.id);
+
+    	Download.downloadTaskList.remove(downloadTask);
+    	Application.downloadTabBadge = Download.downloadTaskList.size();
+
+    };
+
+    vm.ShowAddByResourceUriDialog = function() {
+    	AddDownloadTaskByResourceUriDialog.Show();
+    };
+    vm.ShowDetailDialog = function(downloadTask) {
+    	DownloadTaskDetailDialog.Show(avalon.mix(true, {}, downloadTask.$model));
+    };
+
+});
+
+var AddDownloadTaskByResourceUriDialog = avalon.define('AddDownloadTaskByResourceUriDialog', function(vm) {
+
+	vm.duplexResourceUri = '';
+	vm.Show = function() {
+    	AddDownloadTaskByResourceUriDialog.duplexResourceUri = '';
+    	$('#AddDownloadTaskByResourceUriDialog').modal('show');
+	};
+
+});
+
+var DownloadTaskDetailDialog = avalon.define('DownloadTaskDetailDialog', function(vm) {
+
+	vm.downloadTask = {
+		'resource': {
+			'uri': '',
+			'title': '',
+			'imageResourceAmount': 0
+		},
+		'imageResourceIndex': 1,
+		'status': 'unknown',
+		'err': '',
+		'logs': ''
+	};
+
+	vm.Show = function(downloadTask) {
+
+		DownloadTaskDetailDialog.downloadTask = downloadTask;
+    	$('#DownloadTaskDetailDialog').modal('show');
+
+	};
+
+});
+
+var Configure = avalon.define('Configure', function(vm) {
+
+	vm.duplexHTTPProxy = '';
+
+	vm.Load = function() {
+
+		Configure.duplexHTTPProxy = MEHentai.GetHTTPProxy();
+
+	};
+
+	vm.Save = function() {
+
+		MEHentai.SetHTTPProxy(Configure.duplexHTTPProxy);
+
+	};
+
+});
+
+setTimeout(function() {
+	Browse.Refresh();
+}, 3000);
+
+</script>
+<script>
+
+function ShowDir() {
+
+	var path = 'explorer "' + process.cwd() + '"';
+
+	MChildProcess.exec(path, function(stderr, stdout, stderr) {
+
+	});
+
+}
+
+function LoadCollectResourceList() {
+
+	var collectResourceList = JSON.parse(MFs.readFileSync('./Gentlemen/CollectResourceList.json'));
+
+	for(var i = 0; i < collectResourceList.length; i++) {
+		var collectResource = collectResourceList[i];
+		Collect.Add(collectResource);
+	}
+
+}
+
+function SaveCollectResourceList() {
+
+	var collectResourceList = [];
+
+	var size = Collect.resourceList.size();
+	for(var i = 0; i < size; i++) {
+
+		//var resource = Application.collectResourceList.$model[i].$id ? Application.collectResourceList.$model[i].$model : Application.collectResourceList.$model[i];
+		var resource = Collect.resourceList[i].$model;
+		collectResourceList.push(resource);
+
+	}
+
+	MFs.writeFileSync('./Gentlemen/CollectResourceList.json', JSON.stringify(collectResourceList, null, 4));
+
+}
+
+window.onload = function(event) {
+
+	LoadCollectResourceList();
+
+};
+
+// FIXME: 这个只有刷新的时候才会执行，据说是个BUG，所以先交给NWWindow了…
+window.onbeforeunload = function(event) {
+
+};
+
+NWWindow.on('close', function(event) {
+
+	this.close(true);
+
+});
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+{
+	"name": "Gentlemen",
+	"main": "./Gentlemen/index.html",
+	"window": {
+		"toolbar": false,
+		"width": 1024,
+		"height": 768,
+		"min_width": 800,
+		"min_height": 600
+	}
+}
