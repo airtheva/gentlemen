@@ -12,10 +12,8 @@ Gentlemen是一个E绅士的客户端，使用node-webkit作为宿主环境，�
 
 ## TODO
 
-* 界面细节的微调。
 * 下次启动时恢复下载任务。
 * 下载任务详细信息的实时更新。
-* 配置的预加载。
 
 ## 前端
 
@@ -66,6 +64,10 @@ Gentlemen是一个E绅士的客户端，使用node-webkit作为宿主环境，�
     * 配置接口
         * String GetHTTPProxy();
         * void SetHTTPProxy(String httpProxy);
+        * String GetEntranceURI();
+        * void SetEntranceURI(String entranceURI);
+        * String GetCookies();
+        * void SetCookies(String cookies);
 
 ## 协议
 
