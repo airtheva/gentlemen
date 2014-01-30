@@ -102,7 +102,7 @@
 							<div class="row" ms-each-resource="resourceList">
 								<div class="col-md-3">
 									<div class="thumbnail">
-										<img ms-attr-src="{{ resource.previewUri }}" ms-click="Detail(resource)" style="min-height: 128px; max-height: 128px;" />
+										<img ms-attr-src="{{ resource.previewURI }}" ms-click="Detail(resource)" style="min-height: 128px; max-height: 128px;" />
 										<div class="caption" ms-attr-title="{{ resource.title }}" style="min-height: 5em; max-height: 5em; overflow: hidden;">
 											<span class="label label-default">{{ resource.type }}</span>&nbsp;{{ resource.title }}
 										</div>
@@ -129,7 +129,7 @@
 							<div class="row" ms-each-resource="resourceList">
 								<div class="col-md-3">
 									<div class="thumbnail">
-										<img ms-attr-src="{{ resource.previewUri }}" ms-click="Detail(resource)" style="min-height: 128px; max-height: 128px;" />
+										<img ms-attr-src="{{ resource.previewURI }}" ms-click="Detail(resource)" style="min-height: 128px; max-height: 128px;" />
 										<div class="caption" ms-attr-title="{{ resource.title }}" style="min-height: 5em; max-height: 5em; overflow: hidden;">
 											<span class="label label-default">{{ resource.type }}</span>&nbsp;{{ resource.title }}
 										</div>
@@ -150,7 +150,7 @@
 				<div class="tab-pane" ms-class-0="active: activeTabName == 'download'">
 					<div class="panel panel-default" ms-controller="Download">
 						<div class="panel-heading">
-							<a class="glyphicon glyphicon-plus pull-right" ms-click="ShowAddByResourceUriDialog()">从资源地址添加</a>
+							<a class="glyphicon glyphicon-plus pull-right" ms-click="ShowAddByResourceURIDialog()">从资源地址添加</a>
 							<h1 class="panel-title">下载</h1>
 						</div>
 						<div class="panel-body">
@@ -210,11 +210,13 @@
 								</thead>
 								<tbody>
 									<tr><td>HTTP代理</td><td><input type="text" class="form-control" placeholder="http://host:port/" ms-duplex="duplexHTTPProxy" /></td></tr>
+									<tr><td>入口URI</td><td><input type="text" class="form-control" placeholder="http://g.e-hentai.org/" ms-duplex="duplexEntranceURI" /></td></tr>
+									<tr><td>Cookies</td><td><input type="text" class="form-control" placeholder="ipb_member_id=0; ipb_pass_hash=0123456789abcdef0123456789abcdef;" ms-duplex="duplexCookies" /></td></tr>
 								</tbody>
 							</table>
 							<div class="clearfix">
-								<button type="button" class="btn btn-default pull-left" ms-click="Load()">加载</button>
-								<button type="button" class="btn btn-primary pull-right" ms-click="Save()">保存</button>
+								<button type="button" class="btn btn-default pull-left" ms-click="Reset()">重置</button>
+								<button type="button" class="btn btn-primary pull-right" ms-click="Apply()">应用</button>
 							</div>
 						</div>
 					</div>
@@ -224,7 +226,7 @@
 
 	</div>
 
-	<div class="modal fade" id="AddDownloadTaskByResourceUriDialog" ms-controller="AddDownloadTaskByResourceUriDialog">
+	<div class="modal fade" id="AddDownloadTaskByResourceURIDialog" ms-controller="AddDownloadTaskByResourceURIDialog">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -232,12 +234,12 @@
 					<h2 class="modal-title">从资源地址添加下载任务</h2>
 				</div>
 				<div class="modal-body">
-					<input type="text" class="form-control" placeholder="http://g.e-hentai.org/g/82754/426a61a566/" ms-duplex="duplexResourceUri" />
+					<input type="text" class="form-control" placeholder="http://g.e-hentai.org/g/82754/426a61a566/" ms-duplex="duplexResourceURI" />
 				</div>
 				<div class="modal-footer">
 					<div class="clearfix">
 						<button type="button" class="btn btn-default pull-left" data-dismiss="modal">放弃</button>
-						<button type="button" class="btn btn-primary pull-right" data-dismiss="modal" ms-click="AddByResourceUri()">添加</button>
+						<button type="button" class="btn btn-primary pull-right" data-dismiss="modal" ms-click="AddByResourceURI()">添加</button>
 					</div>
 				</div>
 			</div>
@@ -483,7 +485,7 @@ var Collect = avalon.define('Collect', function(vm) {
 var Download = avalon.define('Download', function(vm) {
 
     // 下载。
-    vm.duplexResourceUri = '';
+    vm.duplexResourceURI = '';
     vm.downloadTaskList = [];
     vm.AddByResource = function(resource) {
     	MEHentai.CreateDownloadTaskByResource(resource, function(err, downloadTask) {
@@ -498,8 +500,8 @@ var Download = avalon.define('Download', function(vm) {
 
     	});
     };
-    vm.AddByResourceUri = function() {
-    	MEHentai.CreateDownloadTaskByResourceUri(Download.duplexResourceUri, function(err, downloadTask) {
+    vm.AddByResourceURI = function() {
+    	MEHentai.CreateDownloadTaskByResourceURI(Download.duplexResourceURI, function(err, downloadTask) {
 
     		if(err) {
     			alert(err);
@@ -555,8 +557,8 @@ var Download = avalon.define('Download', function(vm) {
 
     };
 
-    vm.ShowAddByResourceUriDialog = function() {
-    	AddDownloadTaskByResourceUriDialog.Show();
+    vm.ShowAddByResourceURIDialog = function() {
+    	AddDownloadTaskByResourceURIDialog.Show();
     };
     vm.ShowDetailDialog = function(downloadTask) {
     	DownloadTaskDetailDialog.Show(avalon.mix(true, {}, downloadTask.$model));
@@ -564,12 +566,12 @@ var Download = avalon.define('Download', function(vm) {
 
 });
 
-var AddDownloadTaskByResourceUriDialog = avalon.define('AddDownloadTaskByResourceUriDialog', function(vm) {
+var AddDownloadTaskByResourceURIDialog = avalon.define('AddDownloadTaskByResourceURIDialog', function(vm) {
 
-	vm.duplexResourceUri = '';
+	vm.duplexResourceURI = '';
 	vm.Show = function() {
-    	AddDownloadTaskByResourceUriDialog.duplexResourceUri = '';
-    	$('#AddDownloadTaskByResourceUriDialog').modal('show');
+    	AddDownloadTaskByResourceURIDialog.duplexResourceURI = '';
+    	$('#AddDownloadTaskByResourceURIDialog').modal('show');
 	};
 
 });
@@ -600,16 +602,24 @@ var DownloadTaskDetailDialog = avalon.define('DownloadTaskDetailDialog', functio
 var Configure = avalon.define('Configure', function(vm) {
 
 	vm.duplexHTTPProxy = '';
+	vm.duplexEntranceURI = 'http://g.e-hentai.org/';
+	vm.duplexCookies = '';
 
-	vm.Load = function() {
+	vm.Reset = function() {
 
 		Configure.duplexHTTPProxy = MEHentai.GetHTTPProxy();
+		Configure.duplexEntranceURI = MEHentai.GetEntranceURI();
+		Configure.duplexCookies = MEHentai.GetCookies();
 
 	};
 
-	vm.Save = function() {
+	vm.Apply = function() {
 
 		MEHentai.SetHTTPProxy(Configure.duplexHTTPProxy);
+		MEHentai.SetEntranceURI(Configure.duplexEntranceURI);
+		MEHentai.SetCookies(Configure.duplexCookies);
+
+		SaveConfigurations();
 
 	};
 
@@ -634,11 +644,20 @@ function ShowDir() {
 
 function LoadCollectResourceList() {
 
-	var collectResourceList = JSON.parse(MFs.readFileSync('./Gentlemen/CollectResourceList.json'));
+	try {
 
-	for(var i = 0; i < collectResourceList.length; i++) {
-		var collectResource = collectResourceList[i];
-		Collect.Add(collectResource);
+		var collectResourceList = JSON.parse(MFs.readFileSync('./Gentlemen/CollectResourceList.json'));
+
+		for(var i = 0; i < collectResourceList.length; i++) {
+			var collectResource = collectResourceList[i];
+			Collect.Add(collectResource);
+		}
+
+	}
+	catch(err) {
+
+		console.log(err);
+
 	}
 
 }
@@ -660,9 +679,40 @@ function SaveCollectResourceList() {
 
 }
 
+function LoadConfigurations() {
+
+	try {
+
+		var configurations = JSON.parse(MFs.readFileSync('./Gentlemen/Configurations.json'));
+
+		for(var key in configurations) {
+			console.log(key);
+			Configure[key] = configurations[key];
+		}
+
+		Configure.Apply();
+
+	}
+	catch(err) {
+
+		console.log(err);
+
+	}
+
+}
+
+function SaveConfigurations() {
+
+	var configurations = avalon.mix(true, {}, Configure.$model);
+
+	MFs.writeFileSync('./Gentlemen/Configurations.json', JSON.stringify(configurations, null, 4));
+
+}
+
 window.onload = function(event) {
 
 	LoadCollectResourceList();
+	LoadConfigurations();
 
 };
 
@@ -672,6 +722,10 @@ window.onbeforeunload = function(event) {
 };
 
 NWWindow.on('close', function(event) {
+
+	if(confirm('是否覆盖保存收藏资源列表？')) {
+		SaveCollectResourceList();
+	}
 
 	this.close(true);
 

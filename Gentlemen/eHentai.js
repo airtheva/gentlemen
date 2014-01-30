@@ -22,17 +22,19 @@ var DOWNLOAD_TASK_STATUS_FINISHED = 'finished';
 
 var TIMEOUT = 15000;
 
+var EntranceURI = 'http://g.e-hentai.org/';
 var UserAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.66';
 var HTTPProxy = '';
+var Cookies = 'tips=1; nw=1;';
 
-var CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+var CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 function makeRandomID(size) {
 
 	var randomID = '';
 
 	for(var i = 0; i < size; i++) {
-		randomID += CHARS.charAt(Math.random() * CHARS.length);
+		randomID += CHARACTERS.charAt(Math.random() * CHARACTERS.length);
 	}
 
 	return randomID;
@@ -54,7 +56,7 @@ function makeRequestOptions(options) {
 	var headers = defaults.headers = {};
 
 	headers['User-Agent'] = UserAgent;
-	headers['Cookie'] = 'tips=1; nw=1';
+	headers['Cookie'] = Cookies;
 
 	defaults.proxy = HTTPProxy != '' ? HTTPProxy : null;
 	defaults.encoding = null;
@@ -70,12 +72,12 @@ function makeResource(options) {
 	defaults.type = '';
 	defaults.title = '';
 	defaults.time = '';
-	defaults.previewUri = '';
+	defaults.previewURI = '';
 	defaults.uri = '';
 
 	// 由extractResource填充。
 	defaults.imageResourceAmount = 0;
-	defaults.firstImageResourceUri = '';
+	defaults.firstImageResourceURI = '';
 
 	return Extend(true, {}, defaults, options);
 
@@ -137,10 +139,14 @@ function extractResourceList(body) {
 		options.title = handleFilename(decodeURIComponent(encodeURIComponent($td.eq(2).find('.it5 a').text())));
 		options.time = $td.eq(1).text();
 		// 第一个。
-		options.previewUri = $td.eq(2).find('.it2 img').attr('src');
+		options.previewURI = $td.eq(2).find('.it2 img').attr('src');
 		// 其它。
-		if(!options.previewUri) {
-			options.previewUri = $td.eq(2).find('.it2').text().replace('init~ehgt.org~', 'http://ehgt.org/').split('~')[0];
+		if(!options.previewURI) {
+			options.previewURI = $td.eq(2).find('.it2').text()
+				.replace('init~ehgt.org~', 'http://ehgt.org/') // 游客。
+				.replace('init~ul.ehgt.org~', 'http://ul.ehgt.org/') // 会员。
+				.replace('init~st.exhentai.net~', 'http://st.exhentai.net/') // EX。
+				.split('~')[0];
 		}
 
 		options.uri = $td.eq(2).find('.it5 a').attr('href');
@@ -162,19 +168,19 @@ function extractResource(resource, body) {
 	resource.title = handleFilename(decodeURIComponent(encodeURIComponent($('#gn').text())));
 	resource.time = $('.gdt2').eq(0).text();
 
-	resource.previewUri = $('#gd1 img').attr('src');
+	resource.previewURI = $('#gd1 img').attr('src');
 
 	//resource.uri.
 
 	resource.imageResourceAmount = parseInt($('.gdt2').eq(1).text().split(' ')[0], 10);
-	resource.firstImageResourceUri = $('#gdt a').eq(0).attr('href');
+	resource.firstImageResourceURI = $('#gdt a').eq(0).attr('href');
 
 	return resource;
 
 }
 
 // 从图像资源页中提取图像信息。
-function extractImageResource(imageResourceUri, body) {
+function extractImageResource(imageResourceURI, body) {
 
 	var imageResource = {};
 
@@ -182,13 +188,15 @@ function extractImageResource(imageResourceUri, body) {
 
 	var $a = $('a img').parent().eq(4);
 
-	imageResource.uri = imageResourceUri;
-	imageResource.imageUri = $a.find('img').attr('src');
-	imageResource.nextUri = $a.attr('href');
-	if(imageResource.nextUri == imageResource.uri) {
+	imageResource.uri = imageResourceURI;
+	imageResource.imageURI = $a.find('img').attr('src');
+	imageResource.nextURI = $a.attr('href');
+	if(imageResource.nextURI == imageResource.uri) {
 		// 如果下一个地址和这个地址相同，说明已经执行到了末尾。
-		imageResource.nextUri = null;
+		imageResource.nextURI = null;
 	}
+
+	console.log(imageResource);
 
 	return imageResource;
 
@@ -196,12 +204,12 @@ function extractImageResource(imageResourceUri, body) {
 
 // 通过请求获得图像资源。
 // callback(err, imageResource)
-function getImageResource(refererUri, imageResourceUri, callback) {
+function getImageResource(refererURI, imageResourceURI, callback) {
 
 		MRequest(makeRequestOptions({
-			'uri': imageResourceUri,
+			'uri': imageResourceURI,
 			'headers': {
-				'Referer': refererUri
+				'Referer': refererURI
 			},
 			'encoding': 'utf-8',
 			'timeout': TIMEOUT
@@ -211,7 +219,7 @@ function getImageResource(refererUri, imageResourceUri, callback) {
 				callback(err);
 			}
 			else {
-				var imageResource = extractImageResource(imageResourceUri, body);
+				var imageResource = extractImageResource(imageResourceURI, body);
 				callback(null, imageResource);
 			}
 
@@ -225,7 +233,7 @@ function downloadImage(downloadTask, imageResource, callback) {
 
 	var resource = downloadTask.resource;
 
-	var parts = MPath.basename(imageResource.imageUri).split('.');
+	var parts = MPath.basename(imageResource.imageURI).split('.');
 	var extension = parts[parts.length - 1];
 	var filename = MPath.basename(imageResource.uri) + '.' + extension;
 	var path = MPath.join(MakeResourceDir(resource), handleFilename(filename));
@@ -244,7 +252,7 @@ function downloadImage(downloadTask, imageResource, callback) {
 
 			log(downloadTask, '开始下载' + filename + '。');
 			MRequest(makeRequestOptions({
-				'uri': imageResource.imageUri,
+				'uri': imageResource.imageURI,
 				'headers': {
 					'Referer': imageResource.uri
 				}
@@ -288,7 +296,7 @@ function log(downloadTask, message) {
 // callback(err, pageAmount, resourceList)
 function GetResourceList(filter, pageIndex, callback) {
 
-	var uri = 'http://g.e-hentai.org/';
+	var uri = EntranceURI;
 
 	MRequest(makeRequestOptions({
 		'uri': uri,
@@ -342,12 +350,12 @@ function CreateDownloadTaskByResource(resource, callback) {
 
 // 从资源地址创建下载任务。
 // callback(err, downloadTask)
-function CreateDownloadTaskByResourceUri(resourceUri, callback) {
+function CreateDownloadTaskByResourceURI(resourceURI, callback) {
 
 	var options = {};
 	options.id = makeRandomID(16);
 	options.resource = makeResource({
-		'uri': resourceUri
+		'uri': resourceURI
 	});
 
 	var downloadTask = makeDownloadTask(options);
@@ -386,7 +394,7 @@ function StartDownloadTask(downloadTaskID, callback) {
 		log(downloadTask, '准备下载：' + resource.title + '。');
 		log(downloadTask, '准备解析第一张图像资源。');
 
-		getImageResource(resource.uri, resource.firstImageResourceUri, function(err, firstImageResource) {
+		getImageResource(resource.uri, resource.firstImageResourceURI, function(err, firstImageResource) {
 
 			if(err) {
 				downloadTask.status = DOWNLOAD_TASK_STATUS_ABORTED;
@@ -416,10 +424,10 @@ function StartDownloadTask(downloadTaskID, callback) {
 					downloadTask.progress = (downloadTask.imageResourceIndex + 1) / resource.imageResourceAmount * 100;
 					downloadTask.status = DOWNLOAD_TASK_STATUS_RUNNING;
 
-					if(imageResource.nextUri != null) {
+					if(imageResource.nextURI != null) {
 
 						log(downloadTask, '正在下载，当前进度为：' + downloadTask.imageResourceIndex + ' / ' + resource.imageResourceAmount + '。');
-						getImageResource(imageResource.uri, imageResource.nextUri, function(err, nextImageResource) {
+						getImageResource(imageResource.uri, imageResource.nextURI, function(err, nextImageResource) {
 
 							if(err) {
 								callback(err, downloadTask);
@@ -503,7 +511,7 @@ function RemoveDownloadTask(downloadTaskID) {
 
 }
 
-// 获得代理服务器。
+// 获取代理服务器。
 function GetHTTPProxy() {
 
 	return HTTPProxy;
@@ -517,13 +525,45 @@ function SetHTTPProxy(httpProxy) {
 
 }
 
+// 获取入口URI。
+function GetEntranceURI() {
+
+	return Cookies;
+
+}
+
+// 设置入口URI。
+function SetEntranceURI(entranceURI) {
+
+	EntranceURI = entranceURI;
+
+}
+
+// 获取Cookies。
+function GetCookies() {
+
+	return Cookies;
+
+}
+
+// 设置Cookies。
+function SetCookies(cookies) {
+
+	Cookies = cookies;
+
+}
+
 exports.GetResourceList = GetResourceList;
 exports.MakeResourceDir = MakeResourceDir;
 exports.CreateDownloadTaskByResource = CreateDownloadTaskByResource;
-exports.CreateDownloadTaskByResourceUri = CreateDownloadTaskByResourceUri;
+exports.CreateDownloadTaskByResourceURI = CreateDownloadTaskByResourceURI;
 exports.StartDownloadTask = StartDownloadTask;
 exports.StopDownloadTask = StopDownloadTask;
 exports.RemoveDownloadTask = RemoveDownloadTask;
 
 exports.GetHTTPProxy = GetHTTPProxy;
 exports.SetHTTPProxy = SetHTTPProxy;
+exports.GetEntranceURI = GetEntranceURI;
+exports.SetEntranceURI = SetEntranceURI;
+exports.GetCookies = GetCookies;
+exports.SetCookies = SetCookies;
