@@ -9,7 +9,7 @@
 		cursor: pointer;
 	}
 
-	/* Modified rom bootstrap.css. */
+	/* Modified. From bootstrap.css. */
 	div.thumbnail:hover,
 	div.thumbnail:focus,
 	div.thumbnail.active {
@@ -35,6 +35,9 @@
 				</ul>
 				<div class="nav navbar-nav navbar-right">
 					<form class="navbar-form">
+						<button type="button" class="btn btn-default" title="热重启" onclick="NWWindow.reload()">
+							<span class="glyphicon glyphicon-gift"></span>
+						</button>
 						<button type="button" class="btn btn-default" title="显示应用目录" onclick="ShowDir()">
 							<span class="glyphicon glyphicon-folder-open"></span>
 						</button>
