@@ -15,6 +15,11 @@ Gentlemen是一个E绅士的客户端，使用node-webkit作为宿主环境，�
 * 下次启动时恢复下载任务。
 * 下载任务详细信息的实时更新。
 
+## 下载
+
+* [Windows](https://codeload.github.com/airtheva/gentlemen/zip/windows)
+* [Linux](https://codeload.github.com/airtheva/gentlemen/zip/linux)
+
 ## 前端
 
 前端使用了avalon和bootstrap，avalon负责应用结构，bootstrap负责界面美化。
