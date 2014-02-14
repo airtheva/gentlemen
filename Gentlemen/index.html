@@ -532,7 +532,10 @@ var Download = avalon.define('Download', function(vm) {
     			downloadTask.err = downloadTask0.err;
     			downloadTask.logs = downloadTask0.logs;
 
-    			
+    			if(DownloadTaskDetailDialog.downloadTask.$model.id == downloadTask.id) {
+			    	DownloadTaskDetailDialog.Update(avalon.mix(true, {}, downloadTask.$model));
+    			}
+
     		});
     	}
     };
@@ -542,9 +545,6 @@ var Download = avalon.define('Download', function(vm) {
 
     		if(err) {
     			alert(err);
-    		}
-    		else {
-    			downloadTask;
     		}
 
     	});
@@ -564,7 +564,8 @@ var Download = avalon.define('Download', function(vm) {
     	AddDownloadTaskByResourceURIDialog.Show();
     };
     vm.ShowDetailDialog = function(downloadTask) {
-    	DownloadTaskDetailDialog.Show(avalon.mix(true, {}, downloadTask.$model));
+    	DownloadTaskDetailDialog.Update(avalon.mix(true, {}, downloadTask.$model));
+    	DownloadTaskDetailDialog.Show();
     };
 
 });
@@ -593,9 +594,14 @@ var DownloadTaskDetailDialog = avalon.define('DownloadTaskDetailDialog', functio
 		'logs': ''
 	};
 
-	vm.Show = function(downloadTask) {
+	vm.Update = function(downloadTask) {
 
 		DownloadTaskDetailDialog.downloadTask = downloadTask;
+
+	}
+
+	vm.Show = function(downloadTask) {
+
     	$('#DownloadTaskDetailDialog').modal('show');
 
 	};

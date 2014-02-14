@@ -415,6 +415,7 @@ function StartDownloadTask(downloadTaskID, callback) {
 			if(err) {
 				downloadTask.status = DOWNLOAD_TASK_STATUS_ABORTED;
 				downloadTask.err = err;
+				downloadTask.imageResourceIndex = 0;
 				callback(err, downloadTask);
 			}
 			else {
@@ -426,7 +427,7 @@ function StartDownloadTask(downloadTaskID, callback) {
 
 					if(imageResource.nextURI != null) {
 
-						log(downloadTask, '正在下载，当前进度为：' + downloadTask.imageResourceIndex + ' / ' + resource.imageResourceAmount + '。');
+						log(downloadTask, '正在下载，当前进度为：' + (downloadTask.imageResourceIndex + 1) + ' / ' + resource.imageResourceAmount + '。');
 						getImageResource(imageResource.uri, imageResource.nextURI, function(err, nextImageResource) {
 
 							if(err) {
@@ -462,7 +463,6 @@ function StartDownloadTask(downloadTaskID, callback) {
 				else {
 					// 停止。
 					downloadTask.status = DOWNLOAD_TASK_STATUS_STOPPED;
-
 				}
 
 				callback(null, downloadTask);
