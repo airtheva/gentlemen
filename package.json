@@ -2,7 +2,7 @@
 	"name": "Gentlemen",
 	"main": "./Gentlemen/index.html",
 	"window": {
-		"toolbar": false,
+		"toolbar": true,
 		"width": 1024,
 		"height": 768,
 		"min_width": 800,

@@ -503,8 +503,8 @@ var Download = avalon.define('Download', function(vm) {
 
     	});
     };
-    vm.AddByResourceURI = function() {
-    	MEHentai.CreateDownloadTaskByResourceURI(Download.duplexResourceURI, function(err, downloadTask) {
+    vm.AddByResourceURI = function(resourceURI) {
+    	MEHentai.CreateDownloadTaskByResourceURI(resourceURI, function(err, downloadTask) {
 
     		if(err) {
     			alert(err);
@@ -576,6 +576,10 @@ var AddDownloadTaskByResourceURIDialog = avalon.define('AddDownloadTaskByResourc
 	vm.Show = function() {
     	AddDownloadTaskByResourceURIDialog.duplexResourceURI = '';
     	$('#AddDownloadTaskByResourceURIDialog').modal('show');
+	};
+
+	vm.AddByResourceURI = function() {
+		Download.AddByResourceURI(AddDownloadTaskByResourceURIDialog.duplexResourceURI);
 	};
 
 });
