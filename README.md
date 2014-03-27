@@ -16,10 +16,11 @@ Gentlemen是一个E绅士的客户端，使用node-webkit作为宿主环境，�
 * ChangeLog.md。
 * 更新提示与自动更新。
 
-## 下载
+## 安装
 
-* [Windows](https://codeload.github.com/airtheva/gentlemen/zip/windows)
-* [Linux](https://codeload.github.com/airtheva/gentlemen/zip/linux)
+* 下载node-webkit。
+* 下载gentlemen。
+* 将gentlemen解压到node-webkit目录，确保package.json与nw(.exe)在同一目录。
 
 ## 前端
 
